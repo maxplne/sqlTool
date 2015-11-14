@@ -9,14 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
-
 namespace sqlTool
 {
     public partial class MainForm : Form
     {
-        private static string SELECT = "取得";
-        private static string FIXED_CONDITION = "固定的パラメータ";
-        private static string DYNAMIC_CONDITION = "動的パラメータ";
         public MainForm()
         {
             InitializeComponent();
@@ -34,38 +30,15 @@ namespace sqlTool
 
         private void btn_add_Click(object sender, EventArgs e)
         {
-            switch (this.tab2.SelectedTab.Text)
-            {
-                case "取得":
-                    forSelect();
-                    break;
-                case "固定的パラメータ":
-                    forFixedCondition();
-                    break;
-                case "動的パラメータ":
-                    forDynamicCondition();
-                    break;
-                default:
-                    MessageBox.Show("タブを選択してください。");
-                    break;
-            }
+            testTab2Label();
         }
-
-
 
         /// <summary> 
         /// 取得値カラム用メソッド
         /// </summary> 
         private void forSelect()
         {
-            TreeNode NodeCondition = new TreeNode();
-            NodeCondition.Name = this.cbx_fixWhere.Text;
-            NodeCondition.Text = this.cbx_fixWhere.Text;
-            TreeNode NodeValue = new TreeNode();
-            NodeValue.Name = this.txt_fixedParmName.Text;
-            NodeValue.Text = this.txt_fixedValue.Text;
-            NodeCondition.Nodes.Add(NodeValue);
-            this.tv_fixedParmName.Nodes.Add(NodeCondition);
+            addNodes(this.cbx_getNameType, this.txt_getName, null, this.tv_getValue,true);
         }
 
         /// <summary> 
@@ -73,14 +46,7 @@ namespace sqlTool
         /// </summary> 
         private void forFixedCondition()
         {
-            TreeNode NodeCondition = new TreeNode();
-            NodeCondition.Name = this.cbx_fixWhere.Text;
-            NodeCondition.Text = this.cbx_fixWhere.Text;
-            TreeNode NodeValue = new TreeNode();
-            NodeValue.Name = this.txt_fixedParmName.Text;
-            NodeValue.Text = this.txt_fixedValue.Text;
-            NodeCondition.Nodes.Add(NodeValue);
-            this.tv_fixedParmName.Nodes.Add(NodeCondition);
+            addNodes(this.cbx_fixWhere, this.txt_fixedParmName, this.txt_fixedValue, this.tv_fixedParmName,false);
         }
 
         /// <summary> 
@@ -88,7 +54,66 @@ namespace sqlTool
         /// </summary> 
         private void forDynamicCondition()
         {
+            addNodes(this.cbx_dyWhere, this.txt_dyParmName, this.txt_dyValue, this.tv_dyParmNames,false);
+        }
 
+        /// <summary> 
+        /// ノード選択イベント
+        /// </summary>
+        private void tv_fixedParmName_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            MessageBox.Show(e.Node.Text);
+        }
+        /// <summary>
+        /// ノード追加
+        /// </summary>
+        /// <param name="cbx">whereの条件</param>
+        /// <param name="txtName"></param>
+        /// <param name="txtValue"></param>
+        /// <param name="tv"></param>
+        /// <param name="isSelect">true：取得カラムタブ用、false：静的と動的用</param>
+        private void addNodes(ComboBox cbx, TextBox txtName, TextBox txtValue, TreeView tv, bool isSelect)
+        {
+            if (isSelect)
+            {
+                TreeNode NodeCondition = new TreeNode();
+                NodeCondition.Name = txtName.Text;
+                NodeCondition.Text = cbx.Text;
+                tv.Nodes.Add(NodeCondition);
+            }
+            else
+            {
+                TreeNode NodeCondition = new TreeNode();
+                NodeCondition.Expand();
+                NodeCondition.Name = cbx.Text;
+                NodeCondition.Text = cbx.Text;
+                TreeNode NodeValue = new TreeNode();
+                NodeValue.Name = txtName.Text;
+                NodeValue.Text = txtValue.Text;
+                NodeCondition.Nodes.Add(NodeValue);
+                tv.Nodes.Add(NodeCondition);
+            }
+        }
+        /// <summary>
+        /// 選択されたタブ名を判断する
+        /// </summary>
+        private void testTab2Label()
+        {
+            switch (this.tab2.SelectedTab.Text)
+            {
+                case ConstFile.SELECT: //取得値カラム
+                    forSelect();
+                    break;
+                case ConstFile.FIXED_CONDITION: //静的検索条件
+                    forFixedCondition();
+                    break;
+                case ConstFile.DYNAMIC_CONDITION: //動的検索条件
+                    forDynamicCondition();
+                    break;
+                default:
+                    MessageBox.Show("タブを選択してください。");
+                    break;
+            }
         }
         //        public void AddTree(int ParentID, TreeNode pNode)
         //        {
